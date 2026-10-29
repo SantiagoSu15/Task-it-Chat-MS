@@ -89,7 +89,7 @@ func TestRedisChatAndMessagePersistence(t *testing.T) {
 
 	updated := chat
 	updated.TaskID = chat.TaskID + "-updated"
-	updated.CreatedAt = time.Time{}
+	updated.CreatedAt = chat.CreatedAt.Add(24 * time.Hour)
 	if _, err := chatRepository.Update(ctx, updated); err != nil {
 		t.Fatal(err)
 	}
