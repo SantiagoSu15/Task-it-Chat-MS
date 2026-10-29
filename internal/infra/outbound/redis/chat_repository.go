@@ -107,9 +107,7 @@ func (r *ChatRepository) Update(ctx context.Context, chat model.Chat) (model.Cha
 	if err != nil {
 		return model.Chat{}, err
 	}
-	if chat.CreatedAt.IsZero() {
-		chat.CreatedAt = current.CreatedAt
-	}
+	chat.CreatedAt = current.CreatedAt
 	chat.Messages = nil
 	payload, err := json.Marshal(chat)
 	if err != nil {
@@ -177,9 +175,16 @@ func NewMessageRepository(client *goredis.Client) *MessageRepository {
 }
 
 func (r *MessageRepository) Save(ctx context.Context, chatID string, message model.Message) (model.Message, bool, error) {
-	if message.ChatID == "" {
-		message.ChatID = chatID
+	if strings.TrimSpace(chatID) == "" {
+		return model.Message{}, false, errors.New("chatId is required")
 	}
+	if strings.TrimSpace(message.MessageID) == "" {
+		return model.Message{}, false, errors.New("messageId is required")
+	}
+	if message.ChatID != "" && message.ChatID != chatID {
+		return model.Message{}, false, errors.New("message belongs to a different chat")
+	}
+	message.ChatID = chatID
 	payload, err := json.Marshal(message)
 	if err != nil {
 		return model.Message{}, false, err
